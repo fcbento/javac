@@ -1,6 +1,7 @@
 package com.nelioalves.cursomc;
 
 import com.nelioalves.cursomc.domain.*;
+import com.nelioalves.cursomc.domain.enums.EstadoPagamento;
 import com.nelioalves.cursomc.domain.enums.TipoCliente;
 import com.nelioalves.cursomc.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 @SpringBootApplication
@@ -30,6 +32,12 @@ public class CustomApplication implements CommandLineRunner {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private PagamentoRepository pagamentoRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(CustomApplication.class, args);
@@ -71,7 +79,20 @@ public class CustomApplication implements CommandLineRunner {
         Endereco e1 = new Endereco(null, "Rua Flores", "300", "APTO 203", "Jardim", "085602850", cli1, c1);
         Endereco e2 = new Endereco(null, "Ave Matos", "500", "Sala 800", "Centro", "468792850", cli1, c2);
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        Pedido ped1 = new Pedido(null, sdf.parse("30/09/2017 10:32"), cli1, e1);
+        Pedido ped2 = new Pedido(null, sdf.parse("10/09/2017 10:32"), cli1, e2);
+
+        Pagamento pagto1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO, ped1, 6);
+        Pagamento pagto2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("20/09/2017 10:32"), null);
+
+        ped1.setPagamento(pagto1);
+        ped2.setPagamento(pagto2);
+
+        cli1.getPedidos().addAll(Arrays.asList(ped1, ped2));
+
         cli1.getEnderecos().addAll(Arrays.asList(e1, e2));
+
 
         categoriaRepository.saveAll(Arrays.asList(cat1, cat2));
         produtoRepository.saveAll(Arrays.asList(p1, p2, p3));
@@ -81,5 +102,9 @@ public class CustomApplication implements CommandLineRunner {
         clienteRepository.saveAll(Arrays.asList(cli1));
 
         enderecoRepository.saveAll(Arrays.asList(e1, e2));
+
+        pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
+        pagamentoRepository.saveAll(Arrays.asList(pagto1, pagto2));
+
     }
 }
